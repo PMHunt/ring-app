@@ -21,7 +21,8 @@
         (assoc-in [:headers "Pragma"] "no-cache"))))
 
 (defn -main
-  "Starts a jetty server with our handler attached, join? manages blocking"
+  "Starts a jetty server with our handler attached, join? manages blocking
+  We use threading macro to string together some  functions wrapping handler"
   []
   (jetty/run-jetty
    (-> #'handler
