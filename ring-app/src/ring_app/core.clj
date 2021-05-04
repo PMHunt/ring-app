@@ -24,10 +24,17 @@
   [["/" html-handler]
    ["/echo/:id"
     {:get
-     (fn [{{:keys [id]} :path-params}] ; destructure path-params to id variable
+     (fn [{{:keys [id]} :path-params}] ; destructure path-params to get id
        ;; When the keys and symbols can all have the same name,
        ;; there is a shorter syntax available {:keys [id]}
-       (response/ok (str "<p> the value is: " id  "</p>")))}]])
+       (response/ok (str "<p> the value is: " id  "</p>")))}]
+   ["/api" {:middleware [wrap-formats]}
+    ;; we apply wrap-formats only to /api end points, via router :middlware key
+    ;; https://cljdoc.org/d/metosin/reitit/0.5.13/doc/ring/data-driven-middleware
+    ["/multiply"
+     {:post
+      (fn [{{:keys [a b]} :body-params}]
+        (response/ok {:result (* a b)}))}]]])
 
 (def handler
   (reitit/ring-handler ; map handler to reitit handler
@@ -55,7 +62,6 @@
   (jetty/run-jetty
    (-> #'handler
        wrap-nocache
-       wrap-formats
        wrap-reload)
    {:port 3000
     :join? false}))
