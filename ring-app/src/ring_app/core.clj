@@ -1,5 +1,6 @@
 (ns ring-app.core
   (:require
+   [reitit.ring :as reitit]
    [muuntaja.middleware :as muuntaja]
    [ring.adapter.jetty :as jetty]
    [ring.util.http-response :as response]
@@ -19,7 +20,18 @@
   (response/ok
    {:result (get-in request [:body-params :id])}))
 
-(def handler json-handler) ; map handler to json-handler
+(def routes
+  [["/" html-handler]
+   ["/echo/:id"
+    {:get
+     (fn [{{:keys [id]} :path-params}] ; destructure path-params to id variable
+       ;; When the keys and symbols can all have the same name,
+       ;; there is a shorter syntax available {:keys [id]}
+       (response/ok (str "<p> the value is: " id  "</p>")))}]])
+
+(def handler
+  (reitit/ring-handler ; map handler to reitit handler
+   (reitit/router routes))) ; apply reitit router to routes
 
 (defn wrap-nocache
   "Takes our handler, returns  handler that adds pragma to the response header
