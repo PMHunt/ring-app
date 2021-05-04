@@ -14,7 +14,7 @@
         "</body></html>")))
 
 (defn json-handler
-  "handles json requests"
+  "handles Content-Type: application/json"
   [request]
   (response/ok
    {:result (get-in request [:body-params :id])}))
@@ -31,7 +31,7 @@
         (assoc-in [:headers "Pragma"] "no-cache"))))
 
 (defn wrap-formats
-  "Uses Muuntaja to serialize/deserialize data formats based on header types"
+  "Uses Muuntaja middleware to serialize/deserialize data based on Content-Type"
   [handler]
   (-> handler
       (muuntaja/wrap-format)))
