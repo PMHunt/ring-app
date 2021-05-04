@@ -38,7 +38,15 @@
 
 (def handler
   (reitit/ring-handler ; map handler to reitit handler
-   (reitit/router routes))) ; apply reitit router to routes
+   (reitit/router routes)     ; apply reitit router to routes
+   (reitit/create-default-handler
+    {:not-found
+     (constantly (response/not-found "404 - Page not found"))
+     :method-not-allowed
+     (constantly (response/method-not-allowed "405 - method not allowed"))
+     :not-acceptable
+     (constantly (response/not-acceptable "406 - Not acceptable"))})))
+
 
 (defn wrap-nocache
   "Takes our handler, returns  handler that adds pragma to the response header
