@@ -39,13 +39,15 @@
 (def handler
   (reitit/ring-handler ; map handler to reitit handler
    (reitit/router routes)     ; apply reitit router to routes
-   (reitit/create-default-handler
-    {:not-found
-     (constantly (response/not-found "404 - Page not found"))
-     :method-not-allowed
-     (constantly (response/method-not-allowed "405 - method not allowed"))
-     :not-acceptable
-     (constantly (response/not-acceptable "406 - Not acceptable"))})))
+   (reitit/routes ; https://cljdoc.org/d/metosin/reitit/0.5.13/doc/ring/static-resources
+    (reitit/create-resource-handler {:path "/"}) ; first so isn't masked
+    (reitit/create-default-handler
+     {:not-found
+      (constantly (response/not-found "404 - Page not found"))
+      :method-not-allowed
+      (constantly (response/method-not-allowed "405 - method not allowed"))
+      :not-acceptable
+      (constantly (response/not-acceptable "406 - Not acceptable"))}))))
 
 
 (defn wrap-nocache
