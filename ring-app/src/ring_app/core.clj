@@ -10,8 +10,8 @@
   "handles html requests"
   [request-map]
   (response/ok
-   (str "<html><body>Your IP is: "
-        (:remote-addr request-map)
+   (str "<html><body>Your request body is: "
+        (:body request-map)
         "</body></html>")))
 
 (defn json-handler
@@ -19,6 +19,12 @@
   [request]
   (response/ok
    {:result (get-in request [:body-params :id])}))
+
+(defn wrap-formats
+  "Uses Muuntaja middleware to serialize/deserialize data based on Content-Type"
+  [handler]
+  (-> handler
+      (muuntaja/wrap-format)))
 
 (def routes
   [["/" html-handler]
@@ -28,13 +34,13 @@
        ;; When the keys and symbols can all have the same name,
        ;; there is a shorter syntax available {:keys [id]}
        (response/ok (str "<p> the value is: " id  "</p>")))}]
-   ["/api" {:middleware [wrap-formats]}
-    ;; we apply wrap-formats only to /api end points, via router :middlware key
-    ;; https://cljdoc.org/d/metosin/reitit/0.5.13/doc/ring/data-driven-middleware
-    ["/multiply"
-     {:post
-      (fn [{{:keys [a b]} :body-params}]
-        (response/ok {:result (* a b)}))}]]])
+   ["/api" {:middleware [wrap-formats]}]
+   ;; we apply wrap-formats only to /api end points, via router :middlware key
+   ;; https://cljdoc.org/d/metosin/reitit/0.5.13/doc/ring/data-driven-middleware
+   ["/multiply"
+    {:post
+     (fn [{{:keys [a b]} :body-params}]
+       (response/ok {:result (* a b)}))}]])
 
 (def handler
   (reitit/ring-handler ; map handler to reitit handler
@@ -58,12 +64,6 @@
     (-> request
         handler
         (assoc-in [:headers "Pragma"] "no-cache"))))
-
-(defn wrap-formats
-  "Uses Muuntaja middleware to serialize/deserialize data based on Content-Type"
-  [handler]
-  (-> handler
-      (muuntaja/wrap-format)))
 
 (defn -main
   "Starts a jetty server with our handler attached, join? manages blocking
